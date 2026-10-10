@@ -103,7 +103,7 @@ export default function CourseCard({ course }: { course: Course }) {
       ) : null}
 
       <footer className="card__footer">
-        <span className="badge">{course['Bid Or Permission']}</span>
+        {course['Bid Or Permission'] ? <span className="badge">{course['Bid Or Permission']}</span> : <span />}
         <div className="card__actions">
           {syllabus ? (
             <a href={syllabus} target="_blank" rel="noreferrer">

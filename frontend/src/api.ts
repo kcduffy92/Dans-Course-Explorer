@@ -1,6 +1,6 @@
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000'
 
-/** One row of data/yale_som_classes.json, as served by GET /api/courses. */
+/** One row of the courses table, served by GET /api/courses with the original JSON column names. */
 export interface Course {
   'Course ID': string
   'Course Number': string
@@ -8,7 +8,7 @@ export interface Course {
   Section: string
   'Course Category': string
   'Course Type': string
-  'Bid Or Permission': string
+  'Bid Or Permission'?: string // not in the database; badge is hidden when missing
   'Course Session': string
   Daytimes: string
   Room: string
@@ -19,7 +19,6 @@ export interface Course {
   'Old Syllabus': string
   'Course Description': string
   faculty_bio: string
-  Visible: string
 }
 
 export interface CoursesResponse {

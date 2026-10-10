@@ -14,17 +14,16 @@ from __future__ import annotations
 import functools
 import json
 import os
-import sqlite3
 from pathlib import Path
 
 from dotenv import load_dotenv
 from openai import OpenAI
 
+from db import fetch_courses
 from models import CourseSearchResult
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-DB_PATH = ROOT / "data" / "yale_som.db"
 load_dotenv(ROOT / ".env")
 load_dotenv(ROOT.parent / ".env")
 
@@ -64,11 +63,7 @@ def _client() -> OpenAI:
 
 @functools.lru_cache(maxsize=1)
 def _load_courses() -> tuple[dict, ...]:
-    con = sqlite3.connect(DB_PATH)
-    con.row_factory = sqlite3.Row
-    rows = con.execute("SELECT * FROM courses").fetchall()
-    con.close()
-    return tuple(dict(row) for row in rows)
+    return tuple(fetch_courses())
 
 
 def _clip(text: str, limit: int) -> str:

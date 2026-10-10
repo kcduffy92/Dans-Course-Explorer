@@ -16,12 +16,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from agent import run_agent
+from db import engine, fetch_courses, init_db
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-DATA_PATH = ROOT / "data" / "yale_som_classes.json"
 load_dotenv(ROOT / ".env")
 load_dotenv(ROOT.parent / ".env")
+
+init_db()
 
 app = FastAPI(title="Yale SOM Courses", version="0.1.0")
 app.add_middleware(
@@ -33,8 +35,33 @@ app.add_middleware(
 )
 
 
+# The React catalog was built against the JSON file's column names, so courses
+# from the database are served with those same keys.
+CATALOG_KEYS = {
+    "course_id": "Course ID",
+    "course_number": "Course Number",
+    "course_title": "Course Title",
+    "section": "Section",
+    "course_category": "Course Category",
+    "course_type": "Course Type",
+    "course_session": "Course Session",
+    "daytimes": "Daytimes",
+    "room": "Room",
+    "units": "Units",
+    "faculty_1": "Faculty 1",
+    "faculty_1_email": "Faculty 1 Email",
+    "syllabus": "Syllabus",
+    "old_syllabus": "Old Syllabus",
+    "course_description": "Course Description",
+    "faculty_bio": "faculty_bio",
+}
+
+
 def load_courses() -> list[dict]:
-    return json.loads(DATA_PATH.read_text(encoding="utf-8"))
+    return [
+        {key: row.get(col) or "" for col, key in CATALOG_KEYS.items()}
+        for row in fetch_courses()
+    ]
 
 
 class ChatRequest(BaseModel):
@@ -48,7 +75,7 @@ class ChatResponse(BaseModel):
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "courses_file": str(DATA_PATH.name)}
+    return {"ok": True, "database": engine.url.get_backend_name()}
 
 
 @app.get("/api/courses")
