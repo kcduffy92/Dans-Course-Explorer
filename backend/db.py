@@ -37,6 +37,10 @@ load_dotenv(ROOT.parent / ".env")
 
 DEFAULT_DB_URL = f"sqlite:///{(ROOT / 'data' / 'yale_som.db').as_posix()}"
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip() or DEFAULT_DB_URL
+# Supabase hands out postgres:// or postgresql:// URLs; use the psycopg 3 driver for both.
+for prefix in ("postgres://", "postgresql://"):
+    if DATABASE_URL.startswith(prefix):
+        DATABASE_URL = "postgresql+psycopg://" + DATABASE_URL[len(prefix):]
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 metadata = MetaData()
